@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Component;
+import run.halo.app.extension.Scheme;
 import run.halo.app.extension.SchemeManager;
 import run.halo.app.extension.index.IndexSpec;
 import run.halo.app.plugin.BasePlugin;
@@ -52,6 +53,14 @@ public class MomentsPlugin extends BasePlugin {
                 }))
             );
             indexSpecs.add(new IndexSpec()
+                .setName("spec.approved")
+                .setIndexFunc(simpleAttribute(Moment.class, moment -> {
+                    var approved = moment.getSpec().getApproved();
+                    return approved == null ? null : approved.toString();
+                }))
+            );
+
+            indexSpecs.add(new IndexSpec()
                 .setName(Moment.REQUIRE_SYNC_ON_STARTUP_INDEX_NAME)
                 .setIndexFunc(simpleAttribute(Moment.class, moment -> {
                     var observedVersion = Optional.ofNullable(moment.getStatus())
@@ -68,6 +77,6 @@ public class MomentsPlugin extends BasePlugin {
 
     @Override
     public void stop() {
-        schemeManager.unregister(schemeManager.get(Moment.class));
+        schemeManager.unregister(Scheme.buildFromType(Moment.class));
     }
 }
